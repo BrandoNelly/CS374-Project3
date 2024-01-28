@@ -6,7 +6,7 @@
 //#include <sys.wait.h>
 
 #define MAX_INPUT_LENGTH 2048
-#define MAX_WORDS 128
+#define WORD_LIMIT 128
 
 int main() {
 
@@ -20,7 +20,21 @@ int main() {
             exit(EXIT_FAILURE);
         }
 
+        input[strcspn(input, "/n")] = '\0';
 
+        char *words[WORD_LIMIT];
+        char *token = strtok(input, " ");
+        int wordCount = 0;
+
+        while (token != NULL && wordCount < WORD_LIMIT - 1) {
+            words[wordCount++] = token;
+            token = strtok(NULL, " ");
+        }
+
+        words[wordCount] = NULL;  
+           
+        execvp(words[0], words);
+        exit(1);
 
         }
 
