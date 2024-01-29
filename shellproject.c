@@ -9,6 +9,26 @@
 #define WORD_LIMIT 128
 
 char *words[WORD_LIMIT];
+int wordCount = 0;
+
+
+void makeChild(char* words[]) {
+    
+    pid_t pid = fork();
+
+    if(pid == -1) {
+        perror("Could Not Fork");
+        exit(EXIT_FAILURE);
+
+    } else if (pid == 0) {
+        if(execvp(words[0], words) == -1) {
+        exit(EXIT_FAILURE);
+        }
+
+    } else {
+        wait(NULL);
+    } 
+}
 
 
 int main() {
@@ -23,55 +43,31 @@ int main() {
             exit(EXIT_FAILURE);
         }
 
-        input[strcspn(input, "/n")] = '\0';
+        input[strcspn(input, "\n")] = '\0';
 
-        char *words[WORD_LIMIT];
         char *token = strtok(input, " ");
-        int wordCount = 0;
 
         while (token != NULL && wordCount < WORD_LIMIT - 1) {
             words[wordCount++] = token;
             token = strtok(NULL, " ");
         }
 
-        words[wordCount] = NULL;  
-
-        execvp(words[0], words);
-        exit(1);
-
-        //makeChild();
-
 
         if(strcmp(words[0], "cd") == 0) {
-            chdir(words[1]);
-
-            if(strcmp(chdir(words[1], -1)) == 0) {
+            if(chdir(words[1]) == -1) {
                 perror("Error: cannot change directory");
             }
         }   
 
-        if(words[0] == "exit") {
+        if(strcmp(words[0], "exit") == 0) {
             exit(0);
         }
 
+        words[wordCount] = NULL;  
+        makeChild(words);
+        wordCount = 0;
+
     }
 
 }
 
-
-void makeChild() {
-    
-    pid_t pid = fork();
-
-    if(pid == -1) {
-        perror("Could Not Fork");
-        exit(1);
-
-    } else if (pid == 0) {
-        execvp(words[0], words);
-        exit(1);
-    } else {
-        wait(NULL);
-    }
-    
-}
